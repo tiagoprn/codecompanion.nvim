@@ -434,9 +434,9 @@ function Chat.new(args)
   ui.set_buf_options(bufnr, config.options.display.chat.buf_options)
 
   local adapter = args.adapter or config.options.adapters[config.options.strategies.chat]
-  if adapter == nil then
-    vim.notify("No adapter found", vim.log.levels.ERROR)
-    return
+  if not adapter or not adapter.schema then
+    vim.notify("Adapter or schema is not initialized correctly", vim.log.levels.ERROR)
+    return nil
   end
 
   local settings = args.settings or schema.get_default(adapter.schema, args.settings)
