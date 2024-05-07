@@ -17,20 +17,21 @@ M.inline = function(args)
   local context = util.get_context(api.nvim_get_current_buf(), args)
 
   return require("codecompanion.strategies.inline")
-    .new({
-      context = context,
-      prompts = {
-        {
-          role = "system",
-          content = function()
-            return "I want you to act as a senior "
-              .. context.filetype
-              .. " developer. I will ask you specific questions and I want you to return raw code only (no codeblocks and no explanations). If you can't respond with code, respond with nothing"
-          end,
+      .new({
+        context = context,
+        prompts = {
+          {
+            role = "system",
+            content = function()
+              return "I want you to act as a senior "
+                  .. context.filetype
+                  ..
+                  " developer. I will ask you specific questions and I want you to return raw code only (no codeblocks and no explanations). If you can't respond with code, respond with nothing"
+            end,
+          },
         },
-      },
-    })
-    :start(args.args)
+      })
+      :start(args.args)
 end
 
 M.add = function(args)
@@ -62,10 +63,20 @@ M.chat = function(args)
     adapter = config.options.adapters[args.fargs[1]]
   end
 
+  if not adapter then
+    vim.notify("Adapter not found or not specified", vim.log.levels.ERROR)
+    return
+  end
+
   local chat = require("codecompanion.strategies.chat").new({
     context = context,
     adapter = adapter,
   })
+
+  if not chat then
+    vim.notify("Failed to create chat session", vim.log.levels.ERROR)
+    return
+  end
 
   api.nvim_win_set_buf(0, chat.bufnr)
   ui.scroll_to_end(0)
